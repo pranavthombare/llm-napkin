@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # This is important for creating releases
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -24,7 +26,10 @@ jobs:
         run: npm run check-types && npm run lint
         
       - name: Package extension
-        run: npm run package
+        id: package
+        run: |
+          npx vsce package
+          echo "VSIX_PATH=$(find . -name "*.vsix" -type f | head -n 1)" >> $GITHUB_OUTPUT
         
       - name: Get version from tag
         id: get_version
@@ -33,18 +38,14 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: "*.vsix"
+          files: ${{ steps.package.outputs.VSIX_PATH }}
           name: "Release v${{ steps.get_version.outputs.VERSION }}"
           draft: false
           prerelease: false
           generate_release_notes: true
           
       - name: Publish to VS Code Marketplace
-        run: npx vsce publish
-        env:
-          VSCE_PAT: ${{ secrets.VSCODE_MARKETPLACE_TOKEN }}
+        run: npx vsce publish -p ${{ secrets.VSCODE_MARKETPLACE_TOKEN }}
           
       - name: Publish to Open VSX Registry
-        run: npx ovsx publish
-        env:
-          OVSX_PAT: ${{ secrets.OPEN_VSX_TOKEN }}
+        run: npx ovsx publish ${{ steps.package.outputs.VSIX_PATH }} -p ${{ secrets.OPEN_VSX_TOKEN }}

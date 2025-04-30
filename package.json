@@ -1,14 +1,32 @@
 {
   "name": "llm-napkin",
-  "displayName": "HuggingFace Config Loader",
-  "description": "A VS Code extension to load and analyze Hugging Face model configuration files.",
+  "displayName": "LLM-Napkin",
+  "description": "A VS Code extension to calculate memory requirements and parameter counts for Large Language Models.",
   "version": "0.0.1",
+  "publisher": "placeholder",
+  "private": false,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/llm-napkin.git"
+  },
   "engines": {
     "vscode": "^1.99.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "Machine Learning",
+    "Visualization"
   ],
+  "keywords": [
+    "llm",
+    "ai",
+    "machine learning",
+    "transformer",
+    "huggingface",
+    "memory"
+  ],
+  "icon": "resources/icon.png",
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
