@@ -1,51 +1,75 @@
-# llm-napkin README
+# LLM-Napkin
 
-This is the README for your extension "llm-napkin". After writing up a brief description, we recommend including the following sections.
+A VS Code extension for calculating memory requirements and parameter counts for Large Language Models.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+LLM-Napkin helps you understand the memory footprint of transformer-based language models by providing accurate estimates based on model configuration files from Hugging Face.
 
-For example if there is an image subfolder under your extension project workspace:
+Key capabilities:
+- Load model configurations directly from Hugging Face repositories
+- Calculate precise parameter counts with support for modern architectures (GQA, GLU)
+- Estimate memory requirements for both inference and training
+- Adjust calculations based on quantization level (FP16, INT8, INT4)
+- Visualize how batch size and sequence length affect memory usage
 
-\!\[feature X\]\(images/feature-x.png\)
+![LLM-Napkin Extension](resources/screenshot.png)
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+## How to Use
+
+1. Click the LLM-Napkin icon in the VS Code Activity Bar
+2. Enter the Hugging Face model path (e.g., `Qwen/Qwen3-4B`)
+3. Optionally enter your Hugging Face API key (required for private models)
+4. Adjust settings for quantization, sequence length, and batch size
+5. Click "Calculate Memory Usage" to see detailed results
+
+## Memory Calculation Method
+
+LLM-Napkin uses precise formulas derived from transformer architecture analysis:
+
+### Parameter Count Formula
+```
+P = VD + L×[(2+r)D² + 3DF]
+```
+Where:
+- V = Vocabulary size
+- D = Hidden dimension
+- L = Number of layers
+- r = KV-to-Q head ratio (for GQA)
+- F = Feed-forward dimension
+
+### Memory Requirement Formulas
+- Weights memory: `Mₚ = P × b` (bytes)
+- Inference activation memory: `Mₐ = B × T × D × b` (bytes)
+- Training activation memory: `Mₐ = B × L × D × (T + 2D/h) × b` (bytes)
+
+Where:
+- B = Batch size
+- T = Sequence length
+- b = Bytes per parameter (based on quantization)
+- h = Number of attention heads
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- VS Code 1.74.0 or higher
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+This extension doesn't add any VS Code settings yet.
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+- Some model architectures might require custom formula adjustments
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
-
 ### 1.0.0
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+- Initial release of LLM-Napkin
+- Support for loading Hugging Face model configurations
+- Parameter count calculation for transformer models
+- Memory estimation for different quantization levels
+- Support for GQA and GLU architecture variants
 
 ---
 
