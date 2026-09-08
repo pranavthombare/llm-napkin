@@ -63,6 +63,22 @@ pub struct KvCache {
     pub batch_size: u64,
 }
 
+/// Prompt and generated-token budgets per sequence, with concurrent sequence count.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Workload {
+    pub input_tokens: u64,
+    pub output_tokens: u64,
+    pub batch_size: u64,
+}
+
+impl Workload {
+    pub fn context_length(&self) -> Result<u64> {
+        self.input_tokens
+            .checked_add(self.output_tokens)
+            .context("input_tokens + output_tokens exceeds the supported token count")
+    }
+}
+
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Metadata {
     pub bytes: u64,
@@ -125,6 +141,7 @@ pub struct Estimate {
     pub safetensors: Option<Metadata>,
     pub gguf_files: BTreeMap<String, Metadata>,
     pub moe: Option<MoeMetadata>,
+    pub workload: Option<Workload>,
     pub warnings: Vec<String>,
 }
 
@@ -196,6 +213,9 @@ impl Estimate {
         }
         if let Some(moe) = &self.moe {
             value["moe"] = moe.to_json(details);
+        }
+        if let Some(workload) = &self.workload {
+            value["workload"] = json!(workload);
         }
         Ok(value)
     }

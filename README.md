@@ -21,9 +21,9 @@ cargo install --path . --locked
 ```
 
 ```sh
-# Weights plus KV cache at the specified context and batch size:
+# A table with prompt/output budgets and batch size:
 llm-napkin --model-id HuggingFaceTB/SmolLM2-135M-Instruct \
-  --experimental --max-model-len 8192 --batch-size 2 --kv-cache-dtype bfloat16
+  --input-tokens 2048 --output-tokens 512 --batch-size 4
 
 # Machine-readable byte counts and optional component/dtype details:
 llm-napkin --model-id sentence-transformers/all-MiniLM-L6-v2 --json-output --details
@@ -50,6 +50,30 @@ repositories. The token is never included in reports.
 `--endpoint` / `HF_ENDPOINT` overrides the Hub base URL. `--max-workers` /
 `MAX_WORKERS` controls concurrency (default 8, maximum 128). Network requests
 time out after 30 seconds and retry rate limits and server errors up to twice.
+
+## Token budgets and tables
+
+`--input-tokens` is the prompt-token count per sequence. `--output-tokens` is the
+maximum generated-token count per sequence. The KV-cache context is their sum,
+multiplied by `--batch-size` concurrent sequences in the cache calculation.
+Weights are resident once and do not grow with batch size.
+
+Supplying either token-count option automatically enables experimental KV-cache
+estimation; an omitted counterpart is zero. Zero is allowed for either count,
+but their sum must be positive. Batch size defaults to 1 and must be positive.
+`--max-model-len` remains available with `--experimental` for a combined context
+budget and cannot be combined with the separate input/output options.
+
+The default terminal output is a bordered table containing input tokens, output
+tokens, total context, batch size, weights, cache dtype, cache memory and total
+memory. Unspecified token splits appear as `-`. GGUF repositories show one row
+per variant. `--details` adds component/dtype tables; MoE models also show their
+base and expert weights in a table.
+
+The cache estimate represents the configured token budget at the end of
+generation. Missing/unsupported cache metadata is labeled `not estimated`, with
+weights-only totals. Runtime activations, workspaces and allocator overhead are
+additional.
 
 ## Coverage
 
@@ -78,13 +102,17 @@ Without `--details`, a single Safetensors model or selected GGUF model returns:
 }
 ```
 
-With `--experimental`, `kv_cache` is the estimated number of bytes when supported.
+With `--experimental` or explicit token counts, `kv_cache` is the estimated number
+of bytes when supported.
 Selected GGUF results also include `filename`. Without `--gguf-file`, GGUF results
 map logical filenames to byte counts in `memory` and `kv_cache`; `total_memory`
 is null because variants are alternatives. This also applies to a repository
 containing one GGUF variant. `--details` expands memory into components, parameter
 counts and dtypes, and cache into bytes, dtype, context length and batch size.
 MoE information appears under `moe`. Warnings go to stderr so stdout remains JSON.
+When input/output options are used, a `workload` object records `input_tokens`,
+`output_tokens` and `batch_size` in both compact and detailed JSON. Existing
+commands without these options keep their previous JSON structure.
 
 ## Rust library
 
@@ -94,8 +122,9 @@ use llm_napkin::{Options, estimate};
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let mut options = Options::new("HuggingFaceTB/SmolLM2-135M-Instruct");
-    options.experimental = true;
-    options.max_model_len = Some(2048);
+    options.input_tokens = Some(2048);
+    options.output_tokens = Some(512);
+    options.batch_size = 4;
     let result = estimate(&options).await?;
     println!("{}", result.to_json(true)?);
     Ok(())

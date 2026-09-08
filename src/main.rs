@@ -5,10 +5,9 @@ use std::{
 
 use anyhow::Result;
 use clap::Parser;
-use llm_napkin::{
-    Options, estimate,
-    types::{Estimate, Metadata},
-};
+use llm_napkin::{Options, estimate};
+
+mod report;
 
 #[derive(Parser)]
 #[command(
@@ -27,9 +26,16 @@ struct Cli {
     /// Include approximate KV-cache and MoE weight breakdowns.
     #[arg(long)]
     experimental: bool,
-    /// Context length including prompt and generated tokens.
+    /// Context length including prompt and generated tokens; alternative to input/output counts.
     #[arg(long, value_parser = clap::value_parser!(u64).range(1..))]
     max_model_len: Option<u64>,
+    /// Prompt tokens per sequence. Enables KV cache estimation; omitted output count is zero.
+    #[arg(long, conflicts_with = "max_model_len")]
+    input_tokens: Option<u64>,
+    /// Maximum generated tokens per sequence. Enables KV cache estimation; omitted input count is zero.
+    #[arg(long, conflicts_with = "max_model_len")]
+    output_tokens: Option<u64>,
+    /// Number of concurrent sequences.
     #[arg(long, default_value_t = 1, value_parser = clap::value_parser!(u64).range(1..))]
     batch_size: u64,
     /// Cache precision: auto, float16, float32, bfloat16, fp8 variants; GGUF uses F16, Q8_0, etc.
@@ -40,7 +46,7 @@ struct Cli {
     gguf_file: Option<String>,
     #[arg(long)]
     json_output: bool,
-    /// Include component, parameter and dtype breakdowns in JSON.
+    /// Include component, parameter and dtype breakdowns in tables or JSON.
     #[arg(long)]
     details: bool,
     /// Accepted for hf-mem compatibility; has no effect.
@@ -54,97 +60,6 @@ struct Cli {
     max_workers: u16,
 }
 
-fn human(bytes: u64) -> String {
-    let units = ["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB"];
-    let mut value = bytes as f64;
-    let mut unit = 0;
-    while value >= 1024.0 && unit + 1 < units.len() {
-        value /= 1024.0;
-        unit += 1;
-    }
-    format!("{value:.2} {}", units[unit])
-}
-
-fn print_metadata(out: &mut impl Write, metadata: &Metadata) -> Result<()> {
-    writeln!(
-        out,
-        "  {:<28} {:>16} {:>20}",
-        "Component / dtype", "Parameters", "Weights"
-    )?;
-    for (name, component) in &metadata.components {
-        writeln!(
-            out,
-            "  {name:<28} {:>16} {:>20}",
-            component.param_count,
-            human(component.bytes)
-        )?;
-        for (dtype, stats) in &component.dtypes {
-            writeln!(
-                out,
-                "    {dtype:<26} {:>16} {:>20}",
-                stats.param_count,
-                human(stats.bytes)
-            )?;
-        }
-    }
-    writeln!(out, "  Weights: {}", human(metadata.bytes))?;
-    if let Some(kv) = &metadata.kv_cache {
-        writeln!(
-            out,
-            "  KV cache: {} ({}, context {}, batch {})",
-            human(kv.bytes),
-            kv.dtype,
-            kv.max_model_len,
-            kv.batch_size
-        )?;
-        let total = metadata
-            .bytes
-            .checked_add(kv.bytes)
-            .ok_or_else(|| anyhow::anyhow!("total memory overflow"))?;
-        writeln!(out, "  Total: {}", human(total))?;
-    }
-    Ok(())
-}
-
-fn print_report(out: &mut impl Write, result: &Estimate) -> Result<()> {
-    writeln!(out, "{} @ {}", result.model_id, result.revision)?;
-    if let Some(metadata) = &result.safetensors {
-        print_metadata(out, metadata)?;
-    }
-    for (filename, metadata) in &result.gguf_files {
-        writeln!(out, "\n{filename}")?;
-        print_metadata(out, metadata)?;
-    }
-    if let Some(moe) = &result.moe {
-        writeln!(out, "\n  MoE base: {}", human(moe.base_model.bytes))?;
-        writeln!(
-            out,
-            "  {} experts × {} = {} (all expert weights resident)",
-            moe.expert_count,
-            human(moe.experts.bytes),
-            human(moe.experts_total.bytes)
-        )?;
-        if let Some(active) = moe.active_expert_count {
-            writeln!(out, "  Active experts per token: {active}")?;
-        }
-    }
-    writeln!(
-        out,
-        "\nEstimates cover stored weights{}; runtime workspaces, activations and allocator overhead are additional.",
-        if result
-            .safetensors
-            .as_ref()
-            .is_some_and(|m| m.kv_cache.is_some())
-            || result.gguf_files.values().any(|m| m.kv_cache.is_some())
-        {
-            " and approximate KV cache"
-        } else {
-            ""
-        }
-    )?;
-    Ok(())
-}
-
 async fn run() -> Result<()> {
     let cli = Cli::parse();
     let options = Options {
@@ -153,6 +68,8 @@ async fn run() -> Result<()> {
         hf_token: cli.hf_token,
         experimental: cli.experimental,
         max_model_len: cli.max_model_len,
+        input_tokens: cli.input_tokens,
+        output_tokens: cli.output_tokens,
         batch_size: cli.batch_size,
         kv_cache_dtype: cli.kv_cache_dtype,
         gguf_file: cli.gguf_file,
@@ -168,7 +85,7 @@ async fn run() -> Result<()> {
         serde_json::to_writer_pretty(&mut out, &result.to_json(cli.details)?)?;
         writeln!(out)?;
     } else {
-        print_report(&mut out, &result)?;
+        report::print(&mut out, &result, &options, cli.details)?;
     }
     Ok(())
 }

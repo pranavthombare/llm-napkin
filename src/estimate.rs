@@ -9,7 +9,7 @@ use crate::{
     hub::{Hub, HubFile, MAX_METADATA, valid_path},
     kv_cache,
     safetensors::{self, Tensor},
-    types::{Estimate, Metadata},
+    types::{Estimate, Metadata, Workload},
 };
 
 /// Options for a single estimate. Tokens are deliberately excluded from Debug output.
@@ -20,6 +20,10 @@ pub struct Options {
     pub hf_token: Option<String>,
     pub experimental: bool,
     pub max_model_len: Option<u64>,
+    /// Input tokens per sequence. Enables cache estimation; omitted counterpart is zero.
+    pub input_tokens: Option<u64>,
+    /// Maximum generated tokens per sequence. Conflicts with max_model_len.
+    pub output_tokens: Option<u64>,
     pub batch_size: u64,
     pub kv_cache_dtype: String,
     pub gguf_file: Option<String>,
@@ -35,12 +39,34 @@ impl Options {
             hf_token: None,
             experimental: false,
             max_model_len: None,
+            input_tokens: None,
+            output_tokens: None,
             batch_size: 1,
             kv_cache_dtype: "auto".into(),
             gguf_file: None,
             endpoint: "https://huggingface.co".into(),
             max_workers: 8,
         }
+    }
+
+    fn workload(&self) -> Result<Option<Workload>> {
+        if self.input_tokens.is_none() && self.output_tokens.is_none() {
+            return Ok(None);
+        }
+        ensure!(
+            self.max_model_len.is_none(),
+            "input/output token counts cannot be combined with --max-model-len"
+        );
+        let workload = Workload {
+            input_tokens: self.input_tokens.unwrap_or(0),
+            output_tokens: self.output_tokens.unwrap_or(0),
+            batch_size: self.batch_size,
+        };
+        ensure!(
+            workload.context_length()? > 0,
+            "input_tokens + output_tokens must be positive"
+        );
+        Ok(Some(workload))
     }
 }
 
@@ -476,6 +502,17 @@ async fn estimate_gguf(
 
 /// Discover model weights, read their headers concurrently, and estimate inference memory.
 pub async fn estimate(options: &Options) -> Result<Estimate> {
+    let workload = options.workload()?;
+    let resolved = Options {
+        experimental: options.experimental || workload.is_some(),
+        max_model_len: workload
+            .as_ref()
+            .map(Workload::context_length)
+            .transpose()?
+            .or(options.max_model_len),
+        ..options.clone()
+    };
+    let options = &resolved;
     ensure!(
         options.batch_size > 0 && options.max_model_len != Some(0),
         "batch size and context length must be positive"
@@ -507,6 +544,7 @@ pub async fn estimate(options: &Options) -> Result<Estimate> {
         safetensors: None,
         gguf_files: BTreeMap::new(),
         moe: None,
+        workload,
         warnings: Vec::new(),
     };
     if options.gguf_file.is_some() || (!has_safe && !gguf_paths.is_empty()) {
