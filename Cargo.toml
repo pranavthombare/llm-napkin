@@ -1,0 +1,25 @@
+[package]
+name = "llm-napkin"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+description = "Estimate Hugging Face inference memory from tensor metadata without downloading weights"
+license = "MIT"
+readme = "README.md"
+include = ["/src/**/*.rs", "/tests/**/*.rs", "/Cargo.toml", "/Cargo.lock", "/README.md", "/LICENSE", "/CHANGELOG.md", "/docs/*.json"]
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive", "env"] }
+futures-util = "0.3"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "http2", "json", "stream"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "fs", "time"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["net", "io-util", "sync"] }
+
+[profile.release]
+lto = "thin"
+strip = true

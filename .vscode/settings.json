@@ -1,0 +1,4 @@
+{
+  "rust-analyzer.check.command": "clippy",
+  "search.exclude": { "target": true, "out": true, "node_modules": true }
+}

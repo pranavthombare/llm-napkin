@@ -1,0 +1,432 @@
+{
+  "upstream_commit": "355089f7b14180b38f6fe2d9e4da664acb3675a7",
+  "upstream_version": "0.5.6",
+  "checked_at_utc": "2026-09-08T09:07:57Z",
+  "max_model_len": 2048,
+  "batch_size": 1,
+  "cases": [
+    {
+      "model_id": "HuggingFaceTB/SmolLM2-135M-Instruct",
+      "experimental": true,
+      "gguf_file": null,
+      "match": true,
+      "rust": {
+        "kv_cache": {
+          "batch_size": 1,
+          "bytes": 47185920,
+          "dtype": "BF16",
+          "max_model_len": 2048
+        },
+        "memory": {
+          "bytes": 269030016,
+          "components": {
+            "Transformer": {
+              "bytes": 269030016,
+              "dtypes": {
+                "BF16": {
+                  "bytes": 269030016,
+                  "param_count": 134515008
+                }
+              },
+              "param_count": 134515008
+            }
+          }
+        },
+        "model_id": "HuggingFaceTB/SmolLM2-135M-Instruct",
+        "total_memory": 316215936
+      },
+      "reference": {
+        "model_id": "HuggingFaceTB/SmolLM2-135M-Instruct",
+        "memory": {
+          "bytes": 269030016,
+          "components": {
+            "Transformer": {
+              "bytes": 269030016,
+              "param_count": 134515008,
+              "dtypes": {
+                "BF16": {
+                  "bytes": 269030016,
+                  "param_count": 134515008
+                }
+              }
+            }
+          }
+        },
+        "kv_cache": {
+          "bytes": 47185920,
+          "dtype": "BF16",
+          "max_model_len": 2048,
+          "batch_size": 1
+        },
+        "total_memory": 316215936
+      },
+      "elapsed_seconds": 5.3
+    },
+    {
+      "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+      "experimental": false,
+      "gguf_file": null,
+      "match": true,
+      "rust": {
+        "kv_cache": null,
+        "memory": {
+          "bytes": 90856960,
+          "components": {
+            "0_Transformer": {
+              "bytes": 90856960,
+              "dtypes": {
+                "F32": {
+                  "bytes": 90852864,
+                  "param_count": 22713216
+                },
+                "I64": {
+                  "bytes": 4096,
+                  "param_count": 512
+                }
+              },
+              "param_count": 22713728
+            }
+          }
+        },
+        "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+        "total_memory": 90856960
+      },
+      "reference": {
+        "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+        "memory": {
+          "bytes": 90856960,
+          "components": {
+            "0_Transformer": {
+              "bytes": 90856960,
+              "param_count": 22713728,
+              "dtypes": {
+                "I64": {
+                  "bytes": 4096,
+                  "param_count": 512
+                },
+                "F32": {
+                  "bytes": 90852864,
+                  "param_count": 22713216
+                }
+              }
+            }
+          }
+        },
+        "kv_cache": null,
+        "total_memory": 90856960
+      },
+      "elapsed_seconds": 4.99
+    },
+    {
+      "model_id": "hf-internal-testing/tiny-sdxl-pipe",
+      "experimental": false,
+      "gguf_file": null,
+      "match": true,
+      "rust": {
+        "kv_cache": null,
+        "memory": {
+          "bytes": 11091444,
+          "components": {
+            "text_encoder": {
+              "bytes": 273892,
+              "dtypes": {
+                "F32": {
+                  "bytes": 273892,
+                  "param_count": 68473
+                }
+              },
+              "param_count": 68473
+            },
+            "text_encoder_2": {
+              "bytes": 277988,
+              "dtypes": {
+                "F32": {
+                  "bytes": 277988,
+                  "param_count": 69497
+                }
+              },
+              "param_count": 69497
+            },
+            "unet": {
+              "bytes": 7906064,
+              "dtypes": {
+                "F32": {
+                  "bytes": 7906064,
+                  "param_count": 1976516
+                }
+              },
+              "param_count": 1976516
+            },
+            "vae": {
+              "bytes": 2633500,
+              "dtypes": {
+                "F32": {
+                  "bytes": 2633500,
+                  "param_count": 658375
+                }
+              },
+              "param_count": 658375
+            }
+          }
+        },
+        "model_id": "hf-internal-testing/tiny-sdxl-pipe",
+        "total_memory": 11091444
+      },
+      "reference": {
+        "model_id": "hf-internal-testing/tiny-sdxl-pipe",
+        "memory": {
+          "bytes": 11091444,
+          "components": {
+            "unet": {
+              "bytes": 7906064,
+              "param_count": 1976516,
+              "dtypes": {
+                "F32": {
+                  "bytes": 7906064,
+                  "param_count": 1976516
+                }
+              }
+            },
+            "vae": {
+              "bytes": 2633500,
+              "param_count": 658375,
+              "dtypes": {
+                "F32": {
+                  "bytes": 2633500,
+                  "param_count": 658375
+                }
+              }
+            },
+            "text_encoder_2": {
+              "bytes": 277988,
+              "param_count": 69497,
+              "dtypes": {
+                "F32": {
+                  "bytes": 277988,
+                  "param_count": 69497
+                }
+              }
+            },
+            "text_encoder": {
+              "bytes": 273892,
+              "param_count": 68473,
+              "dtypes": {
+                "F32": {
+                  "bytes": 273892,
+                  "param_count": 68473
+                }
+              }
+            }
+          }
+        },
+        "kv_cache": null,
+        "total_memory": 11091444
+      },
+      "elapsed_seconds": 5.35
+    },
+    {
+      "model_id": "bartowski/SmolLM2-135M-Instruct-GGUF",
+      "experimental": true,
+      "gguf_file": "SmolLM2-135M-Instruct-Q4_K_M.gguf",
+      "match": true,
+      "rust": {
+        "filename": "SmolLM2-135M-Instruct-Q4_K_M.gguf",
+        "kv_cache": {
+          "batch_size": 1,
+          "bytes": 47185920,
+          "dtype": "F16",
+          "max_model_len": 2048
+        },
+        "memory": {
+          "bytes": 103668480,
+          "components": {
+            "Transformer": {
+              "bytes": 103668480,
+              "dtypes": {
+                "F32": {
+                  "bytes": 140544,
+                  "param_count": 35136
+                },
+                "Q4_K": {
+                  "bytes": 7962624,
+                  "param_count": 14155776
+                },
+                "Q5_0": {
+                  "bytes": 53678592,
+                  "param_count": 78077952
+                },
+                "Q6_K": {
+                  "bytes": 10160640,
+                  "param_count": 12386304
+                },
+                "Q8_0": {
+                  "bytes": 31726080,
+                  "param_count": 29859840
+                }
+              },
+              "param_count": 134515008
+            }
+          }
+        },
+        "model_id": "bartowski/SmolLM2-135M-Instruct-GGUF",
+        "total_memory": 150854400
+      },
+      "reference": {
+        "model_id": "bartowski/SmolLM2-135M-Instruct-GGUF",
+        "filename": "SmolLM2-135M-Instruct-Q4_K_M.gguf",
+        "memory": {
+          "bytes": 103668480,
+          "components": {
+            "Transformer": {
+              "bytes": 103668480,
+              "param_count": 134515008,
+              "dtypes": {
+                "Q8_0": {
+                  "bytes": 31726080,
+                  "param_count": 29859840
+                },
+                "F32": {
+                  "bytes": 140544,
+                  "param_count": 35136
+                },
+                "Q6_K": {
+                  "bytes": 10160640,
+                  "param_count": 12386304
+                },
+                "Q5_0": {
+                  "bytes": 53678592,
+                  "param_count": 78077952
+                },
+                "Q4_K": {
+                  "bytes": 7962624,
+                  "param_count": 14155776
+                }
+              }
+            }
+          }
+        },
+        "kv_cache": {
+          "bytes": 47185920,
+          "dtype": "F16",
+          "max_model_len": 2048,
+          "batch_size": 1
+        },
+        "total_memory": 150854400
+      },
+      "elapsed_seconds": 5.86
+    },
+    {
+      "model_id": "Qwen/Qwen1.5-MoE-A2.7B",
+      "experimental": true,
+      "gguf_file": null,
+      "match": true,
+      "rust": {
+        "kv_cache": {
+          "batch_size": 1,
+          "bytes": 402653184,
+          "dtype": "BF16",
+          "max_model_len": 2048
+        },
+        "memory": {
+          "bytes": 28631568384,
+          "components": {
+            "Transformer": {
+              "bytes": 28631568384,
+              "dtypes": {
+                "BF16": {
+                  "bytes": 28631568384,
+                  "param_count": 14315784192
+                }
+              },
+              "param_count": 14315784192
+            }
+          }
+        },
+        "model_id": "Qwen/Qwen1.5-MoE-A2.7B",
+        "moe": {
+          "active_expert_count": 4,
+          "base_model": {
+            "bytes": 3717402624,
+            "dtypes": {
+              "BF16": {
+                "bytes": 3717402624,
+                "param_count": 1858701312
+              }
+            },
+            "param_count": 1858701312
+          },
+          "expert_count": 60,
+          "experts": {
+            "bytes": 415236096,
+            "dtypes": {
+              "BF16": {
+                "bytes": 415236096,
+                "param_count": 207618048
+              }
+            },
+            "param_count": 207618048
+          },
+          "experts_total": {
+            "bytes": 24914165760,
+            "param_count": 12457082880
+          }
+        },
+        "total_memory": 29034221568
+      },
+      "reference": {
+        "model_id": "Qwen/Qwen1.5-MoE-A2.7B",
+        "memory": {
+          "bytes": 28631568384,
+          "components": {
+            "Transformer": {
+              "bytes": 28631568384,
+              "param_count": 14315784192,
+              "dtypes": {
+                "BF16": {
+                  "bytes": 28631568384,
+                  "param_count": 14315784192
+                }
+              }
+            }
+          }
+        },
+        "kv_cache": {
+          "bytes": 402653184,
+          "dtype": "BF16",
+          "max_model_len": 2048,
+          "batch_size": 1
+        },
+        "moe": {
+          "base_model": {
+            "bytes": 3717402624,
+            "param_count": 1858701312,
+            "dtypes": {
+              "BF16": {
+                "bytes": 3717402624,
+                "param_count": 1858701312
+              }
+            }
+          },
+          "expert_count": 60,
+          "experts_total": {
+            "bytes": 24914165760,
+            "param_count": 12457082880
+          },
+          "experts": {
+            "bytes": 415236096,
+            "param_count": 207618048,
+            "dtypes": {
+              "BF16": {
+                "bytes": 415236096,
+                "param_count": 207618048
+              }
+            }
+          },
+          "active_expert_count": 4
+        },
+        "total_memory": 29034221568
+      },
+      "elapsed_seconds": 6.77
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "Build", "type": "shell", "command": "cargo build --locked", "group": { "kind": "build", "isDefault": true }, "problemMatcher": ["$rustc"] },
+    { "label": "Test", "type": "shell", "command": "cargo test --locked", "group": "test", "problemMatcher": ["$rustc"] }
+  ]
+}

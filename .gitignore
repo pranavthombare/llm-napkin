@@ -1,0 +1,7 @@
+/target/
+# Generated files from the previous extension checkout.
+/out/
+/dist/
+/node_modules/
+/.vscode-test/
+*.vsix
