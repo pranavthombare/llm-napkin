@@ -14,6 +14,9 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
           components: rustfmt, clippy
+      - name: Test installer and release packaging
+        if: matrix.rust == 'stable'
+        run: python3 -m unittest discover -s tests -p 'test_distribution.py'
       - run: cargo fmt --check
       - run: cargo test --locked
       - run: cargo clippy --locked --all-targets -- -D warnings

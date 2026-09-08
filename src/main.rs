@@ -3,7 +3,7 @@ use std::{
     process::ExitCode,
 };
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use clap::Parser;
 use llm_napkin::{Options, estimate};
 
@@ -12,13 +12,21 @@ mod report;
 #[derive(Parser)]
 #[command(
     version,
-    about = "Estimate Hugging Face inference memory without downloading model weights"
+    about = "Estimate Hugging Face inference memory without downloading model weights",
+    after_help = "Examples:\n  llm-napkin HuggingFaceTB/SmolLM2-135M-Instruct -i 2048 -o 512 -b 4\n  llm-napkin sentence-transformers/all-MiniLM-L6-v2 --json\n  llm-napkin bartowski/SmolLM2-135M-Instruct-GGUF --details"
 )]
 struct Cli {
-    /// Model ID on the Hugging Face Hub (owner/name).
-    #[arg(long)]
-    model_id: String,
-    #[arg(long, default_value = "main")]
+    /// Hugging Face model ID (owner/name).
+    #[arg(
+        value_name = "MODEL",
+        required_unless_present = "model_id",
+        conflicts_with = "model_id"
+    )]
+    model: Option<String>,
+    /// Alternative to the positional model ID.
+    #[arg(short = 'm', long, value_name = "MODEL")]
+    model_id: Option<String>,
+    #[arg(short = 'r', long, default_value = "main")]
     revision: String,
     /// Token for private/gated models. Falls back to HF_TOKEN and the HF token file.
     #[arg(long, hide_env_values = true)]
@@ -30,13 +38,13 @@ struct Cli {
     #[arg(long, value_parser = clap::value_parser!(u64).range(1..))]
     max_model_len: Option<u64>,
     /// Prompt tokens per sequence. Enables KV cache estimation; omitted output count is zero.
-    #[arg(long, conflicts_with = "max_model_len")]
+    #[arg(short = 'i', long, conflicts_with = "max_model_len")]
     input_tokens: Option<u64>,
     /// Maximum generated tokens per sequence. Enables KV cache estimation; omitted input count is zero.
-    #[arg(long, conflicts_with = "max_model_len")]
+    #[arg(short = 'o', long, conflicts_with = "max_model_len")]
     output_tokens: Option<u64>,
     /// Number of concurrent sequences.
-    #[arg(long, default_value_t = 1, value_parser = clap::value_parser!(u64).range(1..))]
+    #[arg(short = 'b', long, default_value_t = 1, value_parser = clap::value_parser!(u64).range(1..))]
     batch_size: u64,
     /// Cache precision: auto, float16, float32, bfloat16, fp8 variants; GGUF uses F16, Q8_0, etc.
     #[arg(long, default_value = "auto")]
@@ -44,12 +52,13 @@ struct Cli {
     /// Select a GGUF file, or one shard of a complete GGUF model.
     #[arg(long)]
     gguf_file: Option<String>,
-    #[arg(long)]
+    /// Print JSON for scripts instead of a table.
+    #[arg(long, visible_alias = "json")]
     json_output: bool,
     /// Include component, parameter and dtype breakdowns in tables or JSON.
-    #[arg(long)]
+    #[arg(short = 'd', long)]
     details: bool,
-    /// Accepted for hf-mem compatibility; has no effect.
+    /// Legacy compatibility flag; has no effect.
     #[arg(long, hide = true)]
     ignore_table_width: bool,
     /// Hugging Face Hub base URL.
@@ -63,7 +72,10 @@ struct Cli {
 async fn run() -> Result<()> {
     let cli = Cli::parse();
     let options = Options {
-        model_id: cli.model_id,
+        model_id: cli
+            .model_id
+            .or(cli.model)
+            .context("provide a Hugging Face model ID")?,
         revision: cli.revision,
         hf_token: cli.hf_token,
         experimental: cli.experimental,

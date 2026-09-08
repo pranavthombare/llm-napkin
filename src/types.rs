@@ -132,7 +132,7 @@ impl MoeMetadata {
     }
 }
 
-/// Typed result. `to_json` preserves hf-mem's scalar versus multi-GGUF contract.
+/// Typed result. `to_json` returns scalars for single models and maps for GGUF variants.
 #[derive(Clone, Debug)]
 pub struct Estimate {
     pub model_id: String,

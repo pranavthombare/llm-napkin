@@ -6,7 +6,11 @@ rust-version = "1.85"
 description = "Estimate Hugging Face inference memory from tensor metadata without downloading weights"
 license = "MIT"
 readme = "README.md"
-include = ["/src/**/*.rs", "/tests/**/*.rs", "/Cargo.toml", "/Cargo.lock", "/README.md", "/LICENSE", "/CHANGELOG.md", "/docs/*.json"]
+repository = "https://github.com/pranavthombare/llm-napkin"
+homepage = "https://github.com/pranavthombare/llm-napkin"
+keywords = ["huggingface", "llm", "memory", "safetensors", "gguf"]
+categories = ["command-line-utilities", "science"]
+include = ["/src/**/*.rs", "/tests/**/*.rs", "/Cargo.toml", "/Cargo.lock", "/README.md", "/LICENSE", "/CHANGELOG.md", "/docs/*.json", "/docs/*.md", "/examples/*.rs"]
 
 [dependencies]
 anyhow = "1"
